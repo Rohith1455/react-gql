@@ -62,6 +62,7 @@ const BookList = () => {
     const [highlightedBookId, setHighlightedBookId] = useState(null);
 
     const [bookToDelete, setBookToDelete] = useState(null);
+    const [showAddForm, setShowAddForm] = useState(false);
 
     //const bookEvents = useBookEvents();
     const { bookEvents, lastAdded, lastDeleted } = useBookEvents();
@@ -109,6 +110,7 @@ const BookList = () => {
             setTitle('');
             setAuthor('');
             setAddError(null);
+            setSearchQuery('');
             //refetch();         // Refresh book list
 
             setHighlightedBookId(newBookId); // Highlight the new book
@@ -127,11 +129,17 @@ const BookList = () => {
 
     const handleUpdateBook = async (id) => {
         try {
-            await updateBook({
+            const { data: updatedData } = await updateBook({
                 variables: { id, title: editTitle, author: editAuthor },
             });
+
+            setBooks(prevBooks =>
+                prevBooks.map(book =>
+                    book.id === id ? updatedData.updateBook : book
+                )
+            );
+
             setEditingId(null);
-            refetch();
         } catch (err) {
             const msg = err?.message || 'Failed to add book';
             console.error('Add Book Error:', msg);
@@ -140,8 +148,24 @@ const BookList = () => {
     };
 
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p style={{ color: 'red' }}>Error: {error.message}</p>;
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="alert alert-danger my-4" role="alert">
+                <strong>Error:</strong> {error.message}
+            </div>
+        );
+    }
+
 
     const filtereddata = books.filter(book =>
         book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -168,7 +192,7 @@ const BookList = () => {
                         marginBottom: '10px',
                     }}>
                         {bookEvents
-                            .slice(0,5) 
+                            .slice(0, 5)
                             .map((event, index) => (
                                 <div key={`${event.book.id}-${index}`}>
                                     <p style={{ color: event.type === 'deleted' ? 'red' : 'green' }}>
@@ -183,41 +207,54 @@ const BookList = () => {
             </div>
 
 
-            <h3>Add Book</h3>
-            <form onSubmit={handleAddBook} className="mb-4">
-                <div className="row g-2">
-                    <div className="col-md-5">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Book Title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="col-md-5">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Author"
-                            value={author}
-                            onChange={(e) => setAuthor(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="col-md-2">
-                        <button type="submit" className="btn btn-primary w-100">Add Book</button>
-                    </div>
-                </div>
+            <div className="my-4">
+                <button
+                    className="btn btn-outline-success mb-3"
+                    onClick={() => setShowAddForm(!showAddForm)}
+                >
+                    {showAddForm ? 'Hide Add Book Form' : 'Add New Book'}
+                </button>
 
-                {addError && (
-                    <div className="alert alert-danger mt-2" role="alert">
-                        {addError}
-                    </div>
+                {showAddForm && (
+                    <form onSubmit={handleAddBook} className="mb-4">
+                        <div className="row g-2">
+                            <div className="col-md-5">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Book Title"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="col-md-5">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Author"
+                                    value={author}
+                                    onChange={(e) => setAuthor(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="col-md-2">
+                                <button type="submit" className="btn btn-primary w-100">
+                                    Add Book
+                                </button>
+                            </div>
+                        </div>
+
+
+                    </form>
                 )}
+            </div>
 
-            </form>
+            {addError && (
+                <div className="alert alert-danger mt-2" role="alert">
+                    {addError}
+                </div>
+            )}
 
             <h3>Search</h3>
 

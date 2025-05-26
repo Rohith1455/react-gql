@@ -1,4 +1,3 @@
-// useBookEvents.js
 import { useState, useEffect } from 'react';
 import { useSubscription, gql } from '@apollo/client';
 
@@ -22,40 +21,53 @@ const BOOK_DELETED_SUB = gql`
       createdTime
     }
   }
-`;
+`;  
+
+const LOCAL_STORAGE_KEY = 'bookEventLogs';
 
 export const useBookEvents = () => {
-    const { data: addData } = useSubscription(BOOK_ADDED_SUB);
-    const { data: delData } = useSubscription(BOOK_DELETED_SUB);
-    const [bookEvents, setBookEvents] = useState([]);
-    const [lastAdded, setLastAdded] = useState(null);
-    const [lastDeleted, setLastDeleted] = useState(null);
+  const { data: addData } = useSubscription(BOOK_ADDED_SUB);
+  const { data: delData } = useSubscription(BOOK_DELETED_SUB);
 
-    useEffect(() => {
-        if (addData?.bookAdded) {
-            const newEvent = {
-                type: 'added',
-                book: addData.bookAdded,
-                time: new Date().toISOString(),
-            };
-            setBookEvents(prev => [newEvent, ...prev]);
-            //setBooks(prev => [addData.onBookAdded, ...prev]); // Also add to table
-            setLastAdded(addData.bookAdded);
-        }
-    }, [addData]);
+  const [bookEvents, setBookEvents] = useState(() => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  });
 
-    useEffect(() => {
-        if (delData?.bookDeleted) {
-            const newEvent = {
-                type: 'deleted',
-                book: delData.bookDeleted,
-                time: new Date().toISOString(),
-            };
-            setBookEvents(prev => [newEvent, ...prev]);
-            //setBooks(prev => prev.filter(b => b.id !== deldata.bookDeleted.id)); 
-            setLastDeleted(delData.bookDeleted);
-        }
-    }, [delData]);
+  const [lastAdded, setLastAdded] = useState(null);
+  const [lastDeleted, setLastDeleted] = useState(null);
 
-    return { bookEvents, lastAdded, lastDeleted };
+  useEffect(() => {
+    if (addData?.bookAdded) {
+      const newEvent = {
+        type: 'added',
+        book: addData.bookAdded,
+        time: new Date().toISOString(),
+      };
+      setBookEvents(prev => {
+        const updated = [newEvent, ...prev];
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+      setLastAdded(addData.bookAdded);
+    }
+  }, [addData]);
+
+  useEffect(() => {
+    if (delData?.bookDeleted) {
+      const newEvent = {
+        type: 'deleted',
+        book: delData.bookDeleted,
+        time: new Date().toISOString(),
+      };
+      setBookEvents(prev => {
+        const updated = [newEvent, ...prev];
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+      setLastDeleted(delData.bookDeleted);
+    }
+  }, [delData]);
+
+  return { bookEvents, lastAdded, lastDeleted };
 };

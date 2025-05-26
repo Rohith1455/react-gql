@@ -1,25 +1,47 @@
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import BookList from './Pages/BookList';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import Logs from './Pages/Logs'; 
+import Logs from './Pages/Logs'
+// import MapComponent from './Locations/MapComponent';
 
-function App() {
+
+function Navigation() {
+  const location = useLocation();
+
   return (
-    <Router>
-      <nav className="navbar navbar-expand-lg navbar-light bg-light px-3">
-        <Link className="navbar-brand"  to="/">Book Manager</Link>
-        <div className="ms-auto">
+    <nav className="navbar navbar-expand-lg navbar-light bg-light px-3">
+      <Link className="navbar-brand" to="/">Book Manager</Link>
+      <div className="ms-auto">
+        {location.pathname === '/' && (
           <Link className="btn btn-outline-secondary" to="/pages/logs">Logs</Link>
-        </div>
-      </nav>
+        )}
+        {location.pathname === '/pages/logs' && (
+          <Link className="btn btn-outline-secondary" to="/">Home</Link>
+        )}
+      </div>
+    </nav>
+  );
+}
 
+function AppContent() {
+  return (
+    <>
+      <Navigation />
       <Routes>
         <Route path="/" element={<BookList />} />
         <Route path="/pages/logs" element={<Logs />} />
       </Routes>
-    </Router>
+    </>
   );
 }
 
+function App() {
+  return (
+    <Router>
+      {/* <MapComponent /> */}
+      <AppContent />
+    </Router>
+  );
+}
 
 export default App;

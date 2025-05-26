@@ -3,7 +3,7 @@ import React from 'react';
 import { useBookEvents } from '../CustomHooks/useBookEvents';
 
 const Logs = () => {
-   const { bookEvents, lastAdded, lastDeleted } = useBookEvents();
+   const { bookEvents } = useBookEvents();
 
   return (
     <div className="container mt-4">
