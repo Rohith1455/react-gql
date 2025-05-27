@@ -181,254 +181,258 @@ const BookList = () => {
 
     return (
         <div className="container mt-4">
+            <div className="row">
+                <div className="col-md-6">
+                    <div className="container mt-4">
+                        <h4 className="mb-3">Book Event Logs</h4>
+                        {bookEvents.length === 0 ? (
+                            <p>No events yet...</p>
+                        ) : (
+                            <ul className="list-group">
+                                {bookEvents.slice(0, 15).map((event, index) => (
+                                    <li
+                                        key={index}
+                                        className={`list-group-item ${event.type === 'deleted'
+                                            ? 'list-group-item-danger'
+                                            : 'list-group-item-success'
+                                            }`}
+                                    >
+                                        <strong>{event.book.title}</strong> was <strong>{event.type}</strong> on{' '}
+                                        <span>{new Date(event.time).toLocaleString()}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                </div>
 
+                <div className="col-md-6">
 
-            <div>
-                <h2>Live Book Events</h2>
-                {bookEvents.length > 0 ? (
-                    <div style={{
-                        border: '1px solid #ccc',
-                        padding: '10px',
-                        marginBottom: '10px',
-                    }}>
-                        {bookEvents
-                            .slice(0, 5)
-                            .map((event, index) => (
-                                <div key={`${event.book.id}-${index}`}>
-                                    <p style={{ color: event.type === 'deleted' ? 'red' : 'green' }}>
-                                        Book <strong>{event.book.title}</strong> was <strong>{event.type}</strong> on <strong>{new Date(event.time).toLocaleString()}</strong>.
-                                    </p>
+                    <div className="my-4">
+                        <button
+                            className="btn btn-outline-success mb-3"
+                            onClick={() => setShowAddForm(!showAddForm)}
+                        >
+                            {showAddForm ? 'Hide Add Book Form' : 'Add New Book'}
+                        </button>
+
+                        {showAddForm && (
+                            <form onSubmit={handleAddBook} className="mb-4">
+                                <div className="row g-2">
+                                    <div className="col-md-5">
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Book Title"
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col-md-5">
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Author"
+                                            value={author}
+                                            onChange={(e) => setAuthor(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col-md-2">
+                                        <button type="submit" className="btn btn-primary w-100">
+                                            Add Book
+                                        </button>
+                                    </div>
                                 </div>
+
+
+                            </form>
+                        )}
+                    </div>
+
+                    {addError && (
+                        <div className="alert alert-danger mt-2" role="alert">
+                            {addError}
+                        </div>
+                    )}
+
+
+                    <h4>Search</h4>
+
+                    <div className="row mb-3">
+                        <div className="col-md-10">
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Search by title or author..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <div className="col-md-2">
+                            <button
+                                className="btn btn-secondary w-100"
+                                onClick={() => setSearchQuery('')}
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <h4>Live Book List</h4>
+                    <table className="table table-striped table-hover">
+                        <thead className="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {currentData.map(book => (
+                                <tr key={book.id} className={book.id === highlightedBookId ? 'table-success' : ''}>
+
+                                    <td>{book.id}</td>
+                                    <td>
+                                        {editingId === book.id ? (
+                                            <input
+                                                className="form-control"
+                                                value={editTitle}
+                                                onChange={(e) => setEditTitle(e.target.value)}
+                                            />
+                                        ) : (
+                                            book.title
+                                        )}
+                                    </td>
+                                    <td>
+                                        {editingId === book.id ? (
+                                            <input
+                                                className="form-control"
+                                                value={editAuthor}
+                                                onChange={(e) => setEditAuthor(e.target.value)}
+                                            />
+                                        ) : (
+                                            book.author
+                                        )}
+                                    </td>
+                                    <td>
+                                        {editingId === book.id ? (
+                                            <>
+                                                <button
+                                                    className="btn btn-success btn-sm me-2"
+                                                    onClick={() => handleUpdateBook(book.id)}
+                                                >
+                                                    <FaSave />
+                                                </button>
+                                                <button
+                                                    className="btn btn-secondary btn-sm"
+                                                    onClick={() => setEditingId(null)}
+                                                >
+                                                    <FaTimes />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    className="btn btn-warning btn-sm me-2"
+                                                    onClick={() => {
+                                                        setEditingId(book.id);
+                                                        setEditTitle(book.title);
+                                                        setEditAuthor(book.author);
+                                                    }}
+                                                >
+                                                    <FaEdit />
+                                                </button>
+                                                <button
+                                                    className="btn btn-danger btn-sm"
+                                                    onClick={() => setBookToDelete(book)}
+                                                >
+                                                    <FaTrash />
+                                                </button>
+
+                                            </>
+                                        )}
+                                    </td>
+                                </tr>
                             ))}
+                        </tbody>
+                    </table>
+                    <div className="mt-3 d-flex justify-content-center">
+                        <nav>
+                            <ul className="pagination">
+                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                    <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
+                                </li>
+
+                                {Array.from({ length: totalPages }, (_, i) => (
+                                    <li key={i + 1} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                                        <button className="page-link" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+                                    </li>
+                                ))}
+
+                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                    <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
-                ) : (
-                    <p>Waiting for book events...</p>
-                )}
-            </div>
+                    {bookToDelete && (
+                        <>
+                            {/* Modal Overlay */}
+                            <div
+                                className="modal-backdrop fade show"
+                                style={{ zIndex: 1040 }}
+                            ></div>
 
-
-            <div className="my-4">
-                <button
-                    className="btn btn-outline-success mb-3"
-                    onClick={() => setShowAddForm(!showAddForm)}
-                >
-                    {showAddForm ? 'Hide Add Book Form' : 'Add New Book'}
-                </button>
-
-                {showAddForm && (
-                    <form onSubmit={handleAddBook} className="mb-4">
-                        <div className="row g-2">
-                            <div className="col-md-5">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Book Title"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="col-md-5">
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Author"
-                                    value={author}
-                                    onChange={(e) => setAuthor(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="col-md-2">
-                                <button type="submit" className="btn btn-primary w-100">
-                                    Add Book
-                                </button>
-                            </div>
-                        </div>
-
-
-                    </form>
-                )}
-            </div>
-
-            {addError && (
-                <div className="alert alert-danger mt-2" role="alert">
-                    {addError}
-                </div>
-            )}
-
-            <h3>Search</h3>
-
-            <div className="row mb-3">
-                <div className="col-md-10">
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Search by title or author..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-                <div className="col-md-2">
-                    <button
-                        className="btn btn-secondary w-100"
-                        onClick={() => setSearchQuery('')}
-                    >
-                        Clear
-                    </button>
-                </div>
-            </div>
-
-
-            <h3>Live Book List</h3>
-            <table className="table table-striped table-hover">
-                <thead className="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Author</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {currentData.map(book => (
-                        <tr key={book.id} className={book.id === highlightedBookId ? 'table-success' : ''}>
-
-                            <td>{book.id}</td>
-                            <td>
-                                {editingId === book.id ? (
-                                    <input
-                                        className="form-control"
-                                        value={editTitle}
-                                        onChange={(e) => setEditTitle(e.target.value)}
-                                    />
-                                ) : (
-                                    book.title
-                                )}
-                            </td>
-                            <td>
-                                {editingId === book.id ? (
-                                    <input
-                                        className="form-control"
-                                        value={editAuthor}
-                                        onChange={(e) => setEditAuthor(e.target.value)}
-                                    />
-                                ) : (
-                                    book.author
-                                )}
-                            </td>
-                            <td>
-                                {editingId === book.id ? (
-                                    <>
-                                        <button
-                                            className="btn btn-success btn-sm me-2"
-                                            onClick={() => handleUpdateBook(book.id)}
-                                        >
-                                            <FaSave />
-                                        </button>
-                                        <button
-                                            className="btn btn-secondary btn-sm"
-                                            onClick={() => setEditingId(null)}
-                                        >
-                                            <FaTimes />
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button
-                                            className="btn btn-warning btn-sm me-2"
-                                            onClick={() => {
-                                                setEditingId(book.id);
-                                                setEditTitle(book.title);
-                                                setEditAuthor(book.author);
-                                            }}
-                                        >
-                                            <FaEdit />
-                                        </button>
-                                        <button
-                                            className="btn btn-danger btn-sm"
-                                            onClick={() => setBookToDelete(book)}
-                                        >
-                                            <FaTrash />
-                                        </button>
-
-                                    </>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <div className="mt-3 d-flex justify-content-center">
-                <nav>
-                    <ul className="pagination">
-                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                            <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
-                        </li>
-
-                        {Array.from({ length: totalPages }, (_, i) => (
-                            <li key={i + 1} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
-                                <button className="page-link" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
-                            </li>
-                        ))}
-
-                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                            <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-            {bookToDelete && (
-                <>
-                    {/* Modal Overlay */}
-                    <div
-                        className="modal-backdrop fade show"
-                        style={{ zIndex: 1040 }}
-                    ></div>
-
-                    {/* Modal Box */}
-                    <div
-                        className="modal show fade d-block"
-                        tabIndex="-1"
-                        style={{ zIndex: 1050 }}
-                    >
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Confirm Delete</h5>
-                                    <button
-                                        type="button"
-                                        className="btn-close"
-                                        onClick={() => setBookToDelete(null)}
-                                    ></button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>Are you sure you want to delete "<strong>{bookToDelete.title}</strong>"?</p>
-                                </div>
-                                <div className="modal-footer">
-                                    <button
-                                        className="btn btn-secondary"
-                                        onClick={() => setBookToDelete(null)}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        className="btn btn-danger"
-                                        onClick={async () => {
-                                            await deleteBook({ variables: { id: bookToDelete.id } });
-                                            setBookToDelete(null);
-                                            refetch();
-                                        }}
-                                    >
-                                        Delete
-                                    </button>
+                            {/* Modal Box */}
+                            <div
+                                className="modal show fade d-block"
+                                tabIndex="-1"
+                                style={{ zIndex: 1050 }}
+                            >
+                                <div className="modal-dialog">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">Confirm Delete</h5>
+                                            <button
+                                                type="button"
+                                                className="btn-close"
+                                                onClick={() => setBookToDelete(null)}
+                                            ></button>
+                                        </div>
+                                        <div className="modal-body">
+                                            <p>Are you sure you want to delete "<strong>{bookToDelete.title}</strong>"?</p>
+                                        </div>
+                                        <div className="modal-footer">
+                                            <button
+                                                className="btn btn-secondary"
+                                                onClick={() => setBookToDelete(null)}
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                className="btn btn-danger"
+                                                onClick={async () => {
+                                                    await deleteBook({ variables: { id: bookToDelete.id } });
+                                                    setBookToDelete(null);
+                                                    refetch();
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </>
-            )}
+                        </>
+                    )}
 
-        </div>
+                </div>
+            </div >
+        </div >
     );
 };
 
