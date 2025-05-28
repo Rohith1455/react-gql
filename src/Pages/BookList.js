@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { FaTrash, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 import { useBookEvents } from '../CustomHooks/useBookEvents';
+import { useSelector } from 'react-redux';
 
 const GET_BOOKS = gql`
   query {
@@ -66,6 +67,8 @@ const BookList = () => {
 
     //const bookEvents = useBookEvents();
     const { bookEvents, lastAdded, lastDeleted } = useBookEvents();
+    const theme = useSelector(state => state.theme.mode);
+    const isAdmin = useSelector((state) => state.auth.isAdmin);
 
     // Update book list on added book
     useEffect(() => {
@@ -180,31 +183,10 @@ const BookList = () => {
     const totalPages = Math.ceil(filtereddata.length / itemsPerPage);
 
     return (
-        <div className="container mt-4">
+
+        <div className={`container mt-4 rounded ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
             <div className="row">
-                <div className="col-md-6">
-                    <div className="container mt-4">
-                        <h4 className="mb-3">Book Event Logs</h4>
-                        {bookEvents.length === 0 ? (
-                            <p>No events yet...</p>
-                        ) : (
-                            <ul className="list-group">
-                                {bookEvents.slice(0, 15).map((event, index) => (
-                                    <li
-                                        key={index}
-                                        className={`list-group-item ${event.type === 'deleted'
-                                            ? 'list-group-item-danger'
-                                            : 'list-group-item-success'
-                                            }`}
-                                    >
-                                        <strong>{event.book.title}</strong> was <strong>{event.type}</strong> on{' '}
-                                        <span>{new Date(event.time).toLocaleString()}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                </div>
+
 
                 <div className="col-md-6">
 
@@ -288,7 +270,7 @@ const BookList = () => {
                                 <th>ID</th>
                                 <th>Title</th>
                                 <th>Author</th>
-                                <th>Actions</th>
+                                {isAdmin && <th>Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -318,7 +300,7 @@ const BookList = () => {
                                             book.author
                                         )}
                                     </td>
-                                    <td>
+                                    {isAdmin && <td>
                                         {editingId === book.id ? (
                                             <>
                                                 <button
@@ -355,7 +337,7 @@ const BookList = () => {
 
                                             </>
                                         )}
-                                    </td>
+                                    </td>}
                                 </tr>
                             ))}
                         </tbody>
@@ -431,8 +413,32 @@ const BookList = () => {
                     )}
 
                 </div>
+                <div className="col-md-6">
+                    <div className="container mt-4">
+                        <h4 className="mb-3">Book Event Logs</h4>
+                        {bookEvents.length === 0 ? (
+                            <p>No events yet...</p>
+                        ) : (
+                            <ul className="list-group">
+                                {bookEvents.slice(0, 15).map((event, index) => (
+                                    <li
+                                        key={index}
+                                        className={`list-group-item ${event.type === 'deleted'
+                                            ? 'list-group-item-danger'
+                                            : 'list-group-item-success'
+                                            }`}
+                                    >
+                                        <strong>{event.book.title}</strong> was <strong>{event.type}</strong> on{' '}
+                                        <span>{new Date(event.time).toLocaleString()}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                </div>
             </div >
         </div >
+
     );
 };
 
